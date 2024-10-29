@@ -11,3 +11,12 @@ class Vitals(Enum):
     BLOODPRESSURE = "blood pressure"
 
 
+class Modes(Enum):
+    NOTICEONLY = "notice only"
+    STATESTREAM = "state stream"
+
+
+class Colors(Enum):
+    GREEN = "green"
+    RED = "red"
+    ORANGE = "orange"

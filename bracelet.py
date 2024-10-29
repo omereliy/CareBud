@@ -1,4 +1,7 @@
-from vitals import Vitals
+import pandas as pd
+from datetime import datetime, timedelta
+import config_constants
+from enums import Vitals
 
 
 class Bracelet:
@@ -7,9 +10,9 @@ class Bracelet:
     blood_pressure: tuple = (0, 0)
     num: int
     record: dict[str, list] = {"time": [],
-                               "pulse": [],
-                               "blood pressure": [],
-                               "saturation": []
+                               Vitals.PULSE: [],
+                               Vitals.BLOODPRESSURE: [],
+                               Vitals.SATURATION: []
                                }
 
     def __init__(self, num: int, saturation: int, pulse: int, blood_pressure: tuple):
@@ -27,9 +30,23 @@ class Bracelet:
         self.saturation = state[Vitals.SATURATION]
         self.blood_pressure = state[Vitals.BLOODPRESSURE]
         self.pulse = state[Vitals.PULSE]
+        self.update_record()
+
+    def get_color(self):
+        return config_constants.state_to_color(self.get_state())
+
+    def get_record(self):
+        d = {k.value if isinstance(k, Vitals) else k: v for k, v in self.record.items()}
+        return pd.DataFrame(d)
+
+    def update_record(self):
+        current_time = datetime.now()
+        self.record["time"].append(current_time)
+        self.record["Vitals.PULSE"].append(self.pulse)
+        self.record["Vitals.SATURATION"].append(self.saturation)
 
     def __str__(self):
         return (
-            f"blood pressure: {self.blood_pressure}"
-            f"pulse: {self.pulse}"
-            f"saturation: {self.saturation}")
+            f"{Vitals.BLOODPRESSURE.value}: {self.blood_pressure}"
+            f"{Vitals.PULSE.value}: {self.pulse}"
+            f"{Vitals.SATURATION.value}: {self.saturation}")
