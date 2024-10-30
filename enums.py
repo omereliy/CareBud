@@ -18,4 +18,3 @@ class Colors(Enum):
     """Enum for health status color indicators."""
     GREEN = "green"
     RED = "red"
-    ORANGE = "orange"

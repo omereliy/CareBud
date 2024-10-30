@@ -26,6 +26,7 @@ class Bracelet:
                                Vitals.BLOODPRESSURE: [],
                                Vitals.SATURATION: []
                                }
+    is_head_injured: bool = False
 
     def __init__(self, num: int, saturation: int, pulse: int, blood_pressure: tuple):
         """
@@ -41,6 +42,7 @@ class Bracelet:
         self.pulse = pulse
         self.blood_pressure = blood_pressure
         self.num = num
+        self.is_head_injured = False
 
     def get_state(self):
         """Returns the current vitals state as a dictionary."""
@@ -62,7 +64,7 @@ class Bracelet:
 
     def get_color(self):
         """Returns the health status color based on current vitals."""
-        return config_constants.state_to_color(self.get_state())
+        return config_constants.state_to_color(self.get_state(), self.is_head_injured)
 
     def get_record(self):
         """Returns a DataFrame containing the bracelet's historical data."""
@@ -76,6 +78,9 @@ class Bracelet:
         self.record[Vitals.PULSE].append(self.pulse)
         self.record[Vitals.BLOODPRESSURE].append(self.blood_pressure)
         self.record[Vitals.SATURATION].append(self.saturation)
+
+    def toggle_is_head_injured(self):
+        self.is_head_injured = not self.is_head_injured
 
     def __str__(self):
         """Returns a string representation of the bracelet's current vitals."""

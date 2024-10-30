@@ -6,40 +6,54 @@ from control_unit_ui import ControlUnitUI
 from enums import Vitals
 
 # Initialize Control Unit
-control_unit = ControlUnit()
+controller = ControlUnit()
 
 
 # Function to simulate a patient status change after 10 seconds
+def simulate_patient(data: list[dict], patient_index):
+    counter = 0
+    length = len(data)
+    while True:
+        controller.paired_bracelets[patient_index].set_state(data[counter % length])
+        counter += 1
+
+
 def simulate_status_change():
-    observed_bracelet = control_unit.obs_bracelet
+    brace1 = controller.obs_bracelet
     initial_state = {
         Vitals.PULSE: 75,  # Normal pulse
         Vitals.SATURATION: 95,  # Normal saturation
         Vitals.BLOODPRESSURE: (100, 80)  # Normal blood pressure
     }
-    observed_bracelet.set_state(initial_state)
+    brace1.set_state(initial_state)
 
     # Wait 10 seconds
     time.sleep(3)
 
     # Trigger a critical state by changing pulse
     critical_state = {
-        Vitals.PULSE: 200,  # Critical pulse
+        Vitals.PULSE: 210,  # Critical pulse
         Vitals.SATURATION: 95,  # Normal saturation
         Vitals.BLOODPRESSURE: (100, 80)  # Normal blood pressure
     }
-    observed_bracelet.set_state(critical_state)
+    brace1.set_state(critical_state)
 
 
 # Set up the tkinter root and UI
 root = tk.Tk()
-control_unit_ui = ControlUnitUI(control_unit, root)
+ui = ControlUnitUI(controller, root)
 
 # Run the simulation in a separate thread
-control_unit_thread = threading.Thread(target=control_unit.run)
+controller_thread = threading.Thread(target=controller.run)
 simulation_thread = threading.Thread(target=simulate_status_change)
-control_unit_thread.start()
+sensor_bracelet_thread = threading.Thread(target=controller.get_sensor_data, args=[controller.paired_bracelets[1]])
+controller_thread.start()
+sensor_bracelet_thread.start()
 simulation_thread.start()
 
 # Start the UI loop
 root.mainloop()
+
+controller_thread.join()
+simulation_thread.join()
+sensor_bracelet_thread.join()
