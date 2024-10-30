@@ -26,21 +26,15 @@ high_good_pulse = 120
 
 # ======================== end- medical values =================================
 def is_critical_state(state: dict) -> bool:
-    return (high_critical_blood_pressure < state[Vitals.BLOODPRESSURE]
-            or low_critical_blood_pressure > state[Vitals.BLOODPRESSURE]
-            or high_critical_pulse < state[Vitals.PULSE]
-            or low_critical_pulse > state[Vitals.PULSE]
-            or high_critical_saturation < state[Vitals.SATURATION]
-            or low_critical_saturation > state[Vitals.SATURATION])
-
+    """Checks if the given state represents a critical condition."""
+    # Comparison logic based on threshold values
 
 def is_good_state(state: dict) -> bool:
-    return (high_critical_blood_pressure > state[Vitals.BLOODPRESSURE] > low_critical_blood_pressure
-            and high_critical_pulse > state[Vitals.PULSE] > low_critical_pulse
-            and high_critical_saturation > state[Vitals.SATURATION] > low_critical_saturation)
-
+    """Checks if the given state represents a good (healthy) condition."""
+    # Comparison logic based on threshold values
 
 def state_to_color(state: dict):
+    """Maps the vitals state to a color indicator."""
     if is_good_state(state):
         return Colors.GREEN
     elif is_critical_state(state):

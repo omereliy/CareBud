@@ -1,22 +1,21 @@
 from enum import Enum
 
-saturation: float = 0  # 0-100 in percentage
-pulse: int = 0
-blood_pressure_example: tuple = (0, 0)
-
 
 class Vitals(Enum):
+    """Enum for types of vitals measured by the bracelet."""
     SATURATION = "saturation"
     PULSE = "pulse"
     BLOODPRESSURE = "blood pressure"
 
 
 class Modes(Enum):
+    """Enum for ControlUnit modes."""
     NOTICEONLY = "notice only"
     STATESTREAM = "state stream"
 
 
 class Colors(Enum):
+    """Enum for health status color indicators."""
     GREEN = "green"
     RED = "red"
     ORANGE = "orange"
