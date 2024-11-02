@@ -1,13 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
-from control_unit import ControlUnit
-from config_constants import state_to_color
+from logic_layer.control_unit.control_unit import ControlUnit
+from configs.config_constants import state_to_color
 
 
 # Define the ControlUnitUI class to accept a ControlUnit instance
 class ControlUnitUI:
     def __init__(self, controller: ControlUnit, root):
         self.controller = controller  # Use the provided control unit instance
+        self.controller.ui_reference = self
         self.root = root
         self.root.title("Patient Monitoring System")
         self.root.configure(bg="#1c1c1c")  # Darker background for modern look
@@ -35,7 +36,7 @@ class ControlUnitUI:
         self.table_frame.pack(pady=20, padx=20, fill="both", expand=True)  # Increased padding for a cleaner look
 
         # Updated columns to include "Head Injury"
-        columns = ("Patient", "Pulse", "Blood Pressure", "Saturation", "Status", "Head Injury")
+        columns = ("Patient", "Pulse", "Blood Pressure", "Saturation", "Status", "TBI")
         self.table = ttk.Treeview(self.table_frame, columns=columns, show="headings", style="Treeview")
 
         for col in columns:

@@ -1,6 +1,6 @@
-from enums import *
+from configs.enums import Vitals, Colors, Modes
 
-bracelet_index_range = range(0, 4)
+bracelet_index_range = range(0, 2   )
 
 # ======================== start- medical values =============================
 min_saturation = 0

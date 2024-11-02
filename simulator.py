@@ -1,9 +1,10 @@
 import threading
 import time
 import tkinter as tk
-from control_unit import ControlUnit
-from control_unit_ui import ControlUnitUI
-from enums import Vitals
+from logic_layer.control_unit.control_unit import ControlUnit
+from frontend.new_ui import ControlUnitUI
+from configs.enums import Vitals
+from logic_layer.receiver import get_sensor_data
 
 # Initialize Control Unit
 controller = ControlUnit()
@@ -46,7 +47,7 @@ ui = ControlUnitUI(controller, root)
 # Run the simulation in a separate thread
 controller_thread = threading.Thread(target=controller.run)
 simulation_thread = threading.Thread(target=simulate_status_change)
-sensor_bracelet_thread = threading.Thread(target=controller.get_sensor_data, args=[controller.paired_bracelets[1]])
+sensor_bracelet_thread = threading.Thread(target=controller.paired_bracelets[1].run, args=['COM3'])
 controller_thread.start()
 sensor_bracelet_thread.start()
 simulation_thread.start()

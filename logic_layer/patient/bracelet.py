@@ -1,7 +1,9 @@
 import pandas as pd
-from datetime import datetime, timedelta
-import config_constants
-from enums import Vitals
+from datetime import datetime
+from configs import config_constants
+from configs.enums import Vitals
+from logic_layer.receiver import get_sensor_data
+import pyttsx3
 
 
 class Bracelet:
@@ -21,11 +23,7 @@ class Bracelet:
     pulse: int = 0
     blood_pressure: tuple = (0, 0)
     num: int
-    record: dict[any, list] = {"time": [],
-                               Vitals.PULSE: [],
-                               Vitals.BLOODPRESSURE: [],
-                               Vitals.SATURATION: []
-                               }
+    record: dict[any, list] = dict()
     is_head_injured: bool = False
 
     def __init__(self, num: int, saturation: int, pulse: int, blood_pressure: tuple):
@@ -43,6 +41,12 @@ class Bracelet:
         self.blood_pressure = blood_pressure
         self.num = num
         self.is_head_injured = False
+        self.record = {"time": [],
+                       Vitals.PULSE: [],
+                       Vitals.BLOODPRESSURE: [],
+                       Vitals.SATURATION: []
+                       }
+        self._listeners = []
 
     def get_state(self):
         """Returns the current vitals state as a dictionary."""
@@ -61,10 +65,30 @@ class Bracelet:
         self.blood_pressure = state[Vitals.BLOODPRESSURE]
         self.pulse = state[Vitals.PULSE]
         self.update_record()
+        self.notify_listeners()
 
     def get_color(self):
         """Returns the health status color based on current vitals."""
         return config_constants.state_to_color(self.get_state(), self.is_head_injured)
+
+    def alert_if_critical(self):
+        to_alert = False
+        warning = f"warning on patient {self.num + 1}, "
+
+        if not config_constants.is_pulse_ok(state=self.get_state()):
+            warning += "check pulse"
+            to_alert = True
+        if not config_constants.is_blood_pressure_ok(self.get_state(), self.is_head_injured):
+            if to_alert:
+                warning += "and blood pressure"
+            else:
+                to_alert = True
+                warning += "check blood pressure"
+        if to_alert:
+            engine = pyttsx3.init()
+            engine.setProperty("rate", 150)
+            engine.say(warning)
+            engine.runAndWait()
 
     def get_record(self):
         """Returns a DataFrame containing the bracelet's historical data."""
@@ -82,9 +106,22 @@ class Bracelet:
     def toggle_is_head_injured(self):
         self.is_head_injured = not self.is_head_injured
 
+    def add_listener(self, listener):
+        """Register a new listener function to be notified when the state changes."""
+        self._listeners.append(listener)
+
+    def notify_listeners(self):
+        """Call all registered listener functions when the state changes."""
+        print(f"Notifying listeners for Bracelet {self.num}")
+        for listener in self._listeners:
+            listener(self.num)  # Notify with bracelet number as an identifier
+
     def __str__(self):
         """Returns a string representation of the bracelet's current vitals."""
         return (
             f"{Vitals.BLOODPRESSURE.value}: {self.blood_pressure}"
             f"{Vitals.PULSE.value}: {self.pulse}"
             f"{Vitals.SATURATION.value}: {self.saturation}")
+
+    def run(self, *args):
+        get_sensor_data(self, args[0])

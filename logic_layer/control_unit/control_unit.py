@@ -1,10 +1,10 @@
 import datetime
 from datetime import datetime, timedelta
 import pandas as pd
-from config_constants import *
-from bracelet import Bracelet
+from configs.config_constants import *
+from logic_layer.patient.bracelet import Bracelet
 import pyttsx3
-from enums import *
+from configs.enums import *
 import serial
 import time
 
@@ -41,6 +41,7 @@ def read_bracelets_stats(bracelet: Bracelet):
 
 
 # =============================== control unit class ======================================================
+
 class ControlUnit:
     """
     Manages multiple bracelet devices and monitors their statuses in real-time.
@@ -62,6 +63,8 @@ class ControlUnit:
         self.paired_bracelets = [Bracelet(i, 0, 0, (0, 0)) for i in bracelet_index_range]
         self.mode = Modes.NOTICEONLY
         self.obs_bracelet = self.paired_bracelets[0]
+        for bracelet in self.paired_bracelets:
+            bracelet.add_listener(self.on_bracelet_update)
 
     def set_observed_bracelet(self, observed_bracelet_index: int):
         """Sets the observed bracelet by index."""
@@ -112,8 +115,15 @@ class ControlUnit:
                 last_alert_time = self.last_alert_from_patient[bracelet.num]
                 if (bracelet.get_color() == Colors.RED and
                         (last_alert_time is None or current_time - last_alert_time >= timedelta(seconds=20))):
-                    read_bracelets_stats(bracelet)
+                    bracelet.alert_if_critical()
                     self.last_alert_from_patient[bracelet.num] = datetime.now()
+
+    def on_bracelet_update(self, bracelet_num):
+        """Handle updates when a bracelet's state changes."""
+        # Notify the UI or other parts of the system about the change
+        if hasattr(self, 'ui_reference'):  # Check if UI reference exists
+            print(f"Updating bracelet {bracelet_num}")
+            self.ui_reference.on_data_change(bracelet_num)
 
     def toggle_head_injury(self):
         self.obs_bracelet.toggle_is_head_injured()
@@ -125,29 +135,3 @@ class ControlUnit:
                 self.sound_pulse_and_saturation()
             else:
                 self.notice_only()
-
-    def get_sensor_data(self, bracelet_to_update: Bracelet):
-        # Set up the serial connection
-        arduino_port = 'COM3'  # Update with your port, e.g., '/dev/ttyUSB0' on Linux
-        baud_rate = 9600  # Must match the baud rate in the Arduino code
-        ser = serial.Serial(arduino_port, baud_rate)
-        time.sleep(2)  # Give some time to establish the connection
-
-        print("Starting to read data from pulse sensor...")
-
-        try:
-            while True:
-                if ser.in_waiting > 0:
-                    # Read the incoming data from the Arduino
-                    pulse_value = ser.readline().decode('utf-8').strip()
-                    if pulse_value == 'We created a pulseSensor Object !':
-                        continue
-                    bracelet_to_update.set_state(
-                        {Vitals.PULSE: int(pulse_value),
-                         Vitals.SATURATION: bracelet_to_update.saturation,
-                         Vitals.BLOODPRESSURE: bracelet_to_update.blood_pressure}
-                    )
-        except KeyboardInterrupt:
-            print("Data reading stopped by the user.")
-        finally:
-            ser.close()  # Close the serial connection when done
