@@ -1,11 +1,9 @@
-import sys
 import threading
 import time
 import tkinter as tk
 from logic_layer.control_unit.control_unit import ControlUnit
 from frontend.new_ui import ControlUnitUI
 from configs.enums import Vitals
-from logic_layer.receiver import get_sensor_data
 
 # Initialize Control Unit
 controller = ControlUnit()

@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from configs import config_constants
 from configs.enums import Vitals
-from logic_layer.receiver import get_sensor_data
+from logic_layer.patient.receiver import get_sensor_data_via_usb_port
 import pyttsx3
 
 
@@ -72,6 +72,10 @@ class Bracelet:
         return config_constants.state_to_color(self.get_state(), self.is_head_injured)
 
     def alert_if_critical(self):
+        """
+        collects
+        :return:
+        """
         to_alert = False
         warning = f"warning on patient {self.num + 1}, "
 
@@ -104,6 +108,10 @@ class Bracelet:
         self.record[Vitals.SATURATION].append(self.saturation)
 
     def toggle_is_head_injured(self):
+        """
+        changes the value of is_head_injured to its opposite
+        :return:
+        """
         self.is_head_injured = not self.is_head_injured
 
     def add_listener(self, listener):
@@ -124,6 +132,12 @@ class Bracelet:
             f"{Vitals.SATURATION.value}: {self.saturation}")
 
     def run(self, is_simulation, channel: str):
-        get_sensor_data(self, channel)
+        """
+
+        :param is_simulation: states if the bracelet's current vitals are simulated
+        :param channel: the channel/port of the receiver
+        :return:
+        """
+        get_sensor_data_via_usb_port(self, channel)
         if is_simulation:
             pass
