@@ -123,5 +123,7 @@ class Bracelet:
             f"{Vitals.PULSE.value}: {self.pulse}"
             f"{Vitals.SATURATION.value}: {self.saturation}")
 
-    def run(self, *args):
-        get_sensor_data(self, args[0])
+    def run(self, is_simulation, channel: str):
+        get_sensor_data(self, channel)
+        if is_simulation:
+            pass

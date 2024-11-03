@@ -1,3 +1,4 @@
+import sys
 import threading
 import time
 import tkinter as tk
@@ -46,15 +47,17 @@ ui = ControlUnitUI(controller, root)
 
 # Run the simulation in a separate thread
 controller_thread = threading.Thread(target=controller.run)
-simulation_thread = threading.Thread(target=simulate_status_change)
-sensor_bracelet_thread = threading.Thread(target=controller.paired_bracelets[1].run, args=['COM3'])
+simulation_bracelet_thread = threading.Thread(target=simulate_status_change)
+sensor_bracelet_thread = threading.Thread(target=controller.paired_bracelets[1].run, args=[False, 'COM3'])
+
+
 controller_thread.start()
 sensor_bracelet_thread.start()
-simulation_thread.start()
+simulation_bracelet_thread.start()
 
 # Start the UI loop
 root.mainloop()
 
 controller_thread.join()
-simulation_thread.join()
+simulation_bracelet_thread.join()
 sensor_bracelet_thread.join()

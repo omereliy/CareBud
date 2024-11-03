@@ -29,4 +29,6 @@ def get_sensor_data(bracelet_to_update, channel: str = 'COM3'):
     finally:
         ser.close()  # Close the serial connection when done
 
-# def simulate_states()
+
+def simulate_states():
+    pass
