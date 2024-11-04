@@ -7,55 +7,30 @@ from configs.enums import Vitals
 
 # Initialize Control Unit
 controller = ControlUnit()
-
-
-# Function to simulate a patient status change after 10 seconds
-def simulate_patient(data: list[dict], patient_index):
-    counter = 0
-    length = len(data)
-    while True:
-        controller.paired_bracelets[patient_index].set_state(data[counter % length])
-        counter += 1
-
-
-def simulate_status_change():
-    brace1 = controller.obs_bracelet
-    initial_state = {
-        Vitals.PULSE: 75,  # Normal pulse
-        Vitals.SATURATION: 95,  # Normal saturation
-        Vitals.BLOODPRESSURE: (100, 80)  # Normal blood pressure
-    }
-    brace1.set_state(initial_state)
-
-    # Wait 10 seconds
-    time.sleep(3)
-
-    # Trigger a critical state by changing pulse
-    critical_state = {
-        Vitals.PULSE: 210,  # Critical pulse
-        Vitals.SATURATION: 95,  # Normal saturation
-        Vitals.BLOODPRESSURE: (100, 80)  # Normal blood pressure
-    }
-    brace1.set_state(critical_state)
-
-
 # Set up the tkinter root and UI
 root = tk.Tk()
 ui = ControlUnitUI(controller, root)
 
 # Run the simulation in a separate thread
 controller_thread = threading.Thread(target=controller.run)
-simulation_bracelet_thread = threading.Thread(target=simulate_status_change)
-sensor_bracelet_thread = threading.Thread(target=controller.paired_bracelets[1].run, args=[False, 'COM3'])
+simulation_bracelet_threads = [threading.Thread(target=controller.paired_bracelets[i].run,
+                                                args=[True, '', True] if i % 3 == 0 else [True, '', False]) for i in
+                               range(len(controller.paired_bracelets))]
+def terminate_threads_on_ui_exit(threads: list):
+    def on_closing():
+        for thread in threads:
+            if thread.is_alive():
+                thread.join(timeout=1)  # Attempt to join all threads gracefully
+        root.destroy()
 
+    return on_closing
 
-controller_thread.start()
-sensor_bracelet_thread.start()
-simulation_bracelet_thread.start()
-
+for t in simulation_bracelet_threads:
+    t.start()
 # Start the UI loop
+root.protocol("WM_DELETE_WINDOW", terminate_threads_on_ui_exit(simulation_bracelet_threads + [controller_thread]))
 root.mainloop()
+controller_thread.start()
+
 
 controller_thread.join()
-simulation_bracelet_thread.join()
-sensor_bracelet_thread.join()

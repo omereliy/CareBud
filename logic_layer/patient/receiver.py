@@ -1,3 +1,5 @@
+import random
+
 import serial
 import time
 from configs.enums import Vitals
@@ -40,8 +42,48 @@ def get_sensor_data_via_usb_port(bracelet_to_update, channel: str = 'COM3'):
         ser.close()  # Close the serial connection when done
 
 
-def simulate_states():
-    pass
+def simulate_states(bracelet_to_update, is_critical=False):
+    """
+    Simulates the state of the bracelet, either in a critical condition or normal.
+    :param bracelet_to_update: the bracelet object
+    :param is_critical: flag to simulate critical conditions
+    """
+    # Initial state setup
+    bracelet_to_update.set_state(
+        {Vitals.PULSE: 100,
+         Vitals.SATURATION: 75,
+         Vitals.BLOODPRESSURE: (120, 100)}
+    )
+
+    start_time = time.time()  # Record the start time
+
+    try:
+        while True:
+            elapsed_time = time.time() - start_time
+
+            # Simulate changes to the pulse, saturation, and blood pressure
+            if is_critical and elapsed_time >= 7:
+                new_pulse = random.randint(223, 240)  # Escalated pulse after seven seconds or in a critical state
+                new_saturation = random.randint(70, 85)  # Low saturation for critical state
+                new_bp = (random.randint(140, 180), random.randint(90, 110))  # High blood pressure for critical state
+            else:
+                new_pulse = random.randint(80, 140)  # Normal pulse range
+                new_saturation = random.randint(90, 100)  # Normal saturation range
+                new_bp = (random.randint(110, 130), random.randint(70, 90))  # Normal blood pressure range
+
+            bracelet_to_update.set_state(
+                {Vitals.PULSE: new_pulse,
+                 Vitals.SATURATION: new_saturation,
+                 Vitals.BLOODPRESSURE: new_bp}
+            )
+
+            # Print the simulated state for debugging purposes
+            print(f"Simulated state: Pulse={new_pulse}, Saturation={new_saturation}%, BP={new_bp}")
+
+            time.sleep(1.25)  # Wait before the next update
+    except KeyboardInterrupt:
+        print("Simulation stopped by the user.")
+
 
 
 class Receiver:

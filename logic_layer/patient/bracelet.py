@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from configs import config_constants
 from configs.enums import Vitals
-from logic_layer.patient.receiver import get_sensor_data_via_usb_port
+from logic_layer.patient.receiver import get_sensor_data_via_usb_port, simulate_states
 import pyttsx3
 
 
@@ -131,13 +131,17 @@ class Bracelet:
             f"{Vitals.PULSE.value}: {self.pulse}"
             f"{Vitals.SATURATION.value}: {self.saturation}")
 
-    def run(self, is_simulation, channel: str):
+    def run(self, is_simulation, channel: str, is_critical: bool):
         """
 
+        :param is_critical: states if the patient is critical in simulation
         :param is_simulation: states if the bracelet's current vitals are simulated
         :param channel: the channel/port of the receiver
         :return:
         """
-        get_sensor_data_via_usb_port(self, channel)
         if is_simulation:
-            pass
+            simulate_states(self, is_critical)
+        else:
+            get_sensor_data_via_usb_port(self, channel)
+
+
